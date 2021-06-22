@@ -100,8 +100,8 @@ object PersistentActors extends App {
     }
 
     /**
-      * This method is called if persisting failed.
-      * the actor will be stopped
+      * This method is called if persisting an event failed.
+      * The actor will be stopped
       *
       * Best Practice: start the actor again in a while
       * (use Backoff supervisor)
@@ -112,7 +112,7 @@ object PersistentActors extends App {
     }
 
     /**
-      * Called if the journal fails to persist the event
+      * Called if the JOURNAL fails to persist the event
       * The actor is resumed
       */
     override def onPersistRejected(cause: Throwable, event: Any, seqNr: Long): Unit = {
