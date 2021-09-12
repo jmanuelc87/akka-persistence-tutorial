@@ -31,7 +31,7 @@ object MultiplePersistentActorsDemo extends App {
 
     override def receiveCommand: Receive = {
       case Deposit(pid, amount, timestamp) =>
-        if (pid.equalsIgnoreCase(persistenceId)) {
+        isThisAccount(pid) {
           persist(DepositEvent(persistenceId, amount, timestamp)) {
             e =>
               accountBalance += e.amount
@@ -41,7 +41,7 @@ object MultiplePersistentActorsDemo extends App {
         }
 
       case Withdraw(pid, amount, timestamp) =>
-        if (pid.equalsIgnoreCase(persistenceId)) {
+        isThisAccount(pid) {
           if (accountBalance > 0) {
             persist(WithdrawEvent(persistenceId, amount, timestamp)) {
               e =>
@@ -55,13 +55,13 @@ object MultiplePersistentActorsDemo extends App {
 
     override def receiveRecover: Receive = {
       case DepositEvent(pid, amount, timestamp) =>
-        if (pid.equalsIgnoreCase(persistenceId)) {
+        isThisAccount(pid) {
           accountBalance += amount
           log.info(s"Deposit, Account balance $accountBalance")
         }
 
       case WithdrawEvent(pid, amount, timestamp) =>
-        if (pid.equalsIgnoreCase(persistenceId)) {
+        isThisAccount(pid) {
           if (accountBalance > 0) {
             accountBalance -= amount
             log.info(s"Withdraw, Account balance $accountBalance")
@@ -71,10 +71,12 @@ object MultiplePersistentActorsDemo extends App {
       case SnapshotOffer(metadata, contents) =>
         val pid = contents.asInstanceOf[BalanceSnapshot].id
 
-        if (pid.equalsIgnoreCase(persistenceId)) {
+        isThisAccount(pid) {
           accountBalance = contents.asInstanceOf[BalanceSnapshot].amount
         }
     }
+
+    def isThisAccount(pid: String)(handler: => Unit): Unit = if (pid.equalsIgnoreCase(persistenceId)) handler
 
     def maybeCheckpoint(): Unit = {
       transactionsWithoutCheckpoint += 1
