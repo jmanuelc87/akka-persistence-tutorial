@@ -29,7 +29,7 @@ class SimplePersistentActor extends PersistentActor with ActorLogging {
 
   override def receiveRecover: Receive = {
     case SnapshotOffer(metadata, payload: Int) =>
-      log.info(s"Recovered snapshot: $payload")
+      log.info(s"Recovered snapshot: $payload with $metadata")
       nMessages = payload
 
     case message =>
